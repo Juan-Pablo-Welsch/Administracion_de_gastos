@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.zorwel.gastos",
+      "sha256_cert_fingerprints": [
+        "C6:C8:90:8B:04:BB:7C:CC:E5:78:6A:84:C3:03:FB:10:4E:23:D8:F4:96:49:74:02:53:9A:96:47:30:CA:5B:DC"
+      ]
+    }
+  }
+]

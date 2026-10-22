@@ -1,0 +1,607 @@
+/* style.css - INTEGRACIÓN TOTAL ZORWEL */
+
+/* ========================================================== */
+/* 🛠️ NUEVO: FUENTE GLOBAL Y COMPORTAMIENTO (ANALYTICS)       */
+/* ========================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Clases específicas para el color de las filas */
+/* Filas adaptativas para Modo Claro y Oscuro */
+
+/* EGRESOS */
+.row-egreso {
+    background-color: #fef2f2 !important; /* Rojo clarito en modo claro */
+    color: #1f2937; 
+}
+.dark .row-egreso {
+    background-color: rgba(239, 68, 68, 0.15) !important; /* Rojo muy oscuro y sutil en Dark */
+    color: #fca5a5 !important; /* Texto rojizo claro para que se lea */
+}
+
+/* INGRESOS */
+.row-ingreso {
+    background-color: #f0fff4 !important; /* Verde clarito en modo claro */
+    color: #1f2937;
+}
+.dark .row-ingreso {
+    background-color: rgba(5, 150, 105, 0.15) !important; /* Verde muy oscuro en Dark */
+    color: #6ee7b7 !important; /* Texto verdoso claro */
+}
+
+/* Arreglo para los textos secundarios (detalles entre paréntesis) en modo oscuro */
+.dark .row-egreso span.text-gray-500, 
+.dark .row-ingreso span.text-gray-500 {
+    color: #9ca3af !important;
+}
+
+/* Color de los encabezados de la tabla en modo oscuro */
+.dark thead th {
+    color: #f8fafc !important;
+    background-color: #1e293b;
+}
+
+/* Scrollbar moderno para las listas (Tu original) */
+#lista-fijos::-webkit-scrollbar,
+#fijos-maestros-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#lista-fijos::-webkit-scrollbar-thumb,
+#fijos-maestros-container::-webkit-scrollbar-thumb {
+    background: #D1D5DB; /* Gris claro */
+    border-radius: 10px;
+}
+
+#lista-fijos::-webkit-scrollbar-track,
+#fijos-maestros-container::-webkit-scrollbar-track {
+    background: #F9FAFB;
+}
+
+/* ========================================================== */
+/* 🛠️ NUEVO: SCROLLBAR CUSTOM PARA ALERTAS DE ANALYTICS       */
+/* ========================================================== */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+.dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #64748b; }
+
+
+/* -------------------------------------- */
+/* --- SPLASH SCREEN ESTILO DISNEY+ (FONDO OSCURO) --- */
+/* -------------------------------------- */
+#splash {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    /* 1. COLOR DE FONDO PRINCIPAL OSCURO */
+    background: #020617; 
+    z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: all 1s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.disney-bg {
+    position: absolute; inset: 0;
+    /* 2. GRADIENTE OSCURO MÁS SUTIL */
+    background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); 
+    animation: bg-pulse 4s infinite alternate; z-index: -1;
+}
+@keyframes bg-pulse { 
+    0% { opacity: 0.5; transform: scale(1); } 
+    100% { opacity: 1; transform: scale(1.1); } 
+}
+.logo-container {
+    position: relative; width: 200px; height: 200px;
+    animation: logo-entrance 1.5s ease-out forwards;
+    
+}
+#splash-logo-img { 
+    width: 100%; height: 100%; 
+    border-radius: 100%; 
+    object-fit: cover; 
+    /* Sombra más marcada para destacar sobre el fondo oscuro */
+    box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+}
+@keyframes logo-entrance {
+    0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
+    100% { transform: scale(1); opacity: 1; filter: blur(0); }
+}
+.logo-shimmer {
+    position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+    /* Shimmer más transparente sobre el fondo oscuro */
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: skewX(-20deg); animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0% { left: -150%; } 100% { left: 150%; } }
+.disney-spinner {
+    margin-top: 40px; width: 24px; height: 24px;
+    /* Usamos tu color primario azul para el spinner */
+    border: 2px solid rgba(29, 78, 216, 0.3); /* Base más visible */
+    border-top: 2px solid #1D4ED8; 
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+/* -------------------------------------- */
+/* --- ESTILOS PARA DATOS SENSIBLES (OJITOS) --- */
+/* -------------------------------------- */
+
+.sensitive-data {
+    /* 1. Transición suave para el efecto blur */
+    transition: filter 0.3s ease;
+    
+    /* 2. Filtro blur por defecto (datos ocultos) */
+    filter: blur(5px); 
+}
+
+.sensitive-data.revealed {
+    /* 3. Estado revelado: Quita el filtro */
+    filter: none; 
+}
+
+
+/* -------------------------------------- */
+/* --- FONDO PERSONALIZADO ZORWEL (Degradado más fuerte) --- */
+/* -------------------------------------- */
+.bg-zorwel-gradient {
+    /*
+    Usando tonos 200 de Tailwind, que son más oscuros que los 50 que usamos antes,
+    para reflejar mejor el tono de tu logo.
+    */
+    background: linear-gradient(
+        135deg, 
+        #c2c9cf 30%,   /* Tono Azul claro (Blue 200 de Tailwind) */
+        #a7bbae 80%  /* Tono Verde claro (Green 200 de Tailwind) */
+    );
+}
+
+
+/* --- REGAL DE OCULTAMIENTO DEL CONTENIDO PRINCIPAL --- */
+/* Esta clase se usa para asegurar que el contenido no visible */
+/* hasta que el JS lo revele, previniendo el parpadeo del logo anterior. */
+.content-hidden {
+    display: none !important; 
+    /* Usamos !important para asegurar que sobreescriba cualquier regla de Tailwind */
+}
+
+/* La clase que usaremos en JS para mostrarlo */
+.content-visible {
+    display: block !important;
+}
+
+/* -------------------------------------- */
+/* --- EFECTO DE AURA PULSANTE EN LOGO DEL DASHBOARD --- */
+/* -------------------------------------- */
+
+/* 1. CONTENEDOR DEL LOGO DEL DASHBOARD */
+.logo-dashboard-wrapper {
+    position: relative; /* CLAVE: Punto de referencia para el aura */
+    width: 9rem; /* 144px (w-36 h-36) */
+    height: 9rem; /* 144px */
+    margin-bottom: 1rem; /* mb-4 de Tailwind */
+    border-radius: 9999px; /* rounded-full */
+    /* Aseguramos que el logo (que no tiene clase z-10) se renderice por encima */
+}
+
+/* 2. EL AURA PULSANTE DEL DASHBOARD */
+.faro-aura-dashboard {
+    /* Posicionamiento y tamaño igual que el logo wrapper */
+    position: absolute; 
+    inset: 0; 
+    
+    /* Estilos del Aura (Usaremos un naranja que destaca bien sobre los fondos de tu app) */
+    background: #16f921; /* Naranja (similar al Amber 500/600 de Tailwind) */
+    border-radius: 50%; /* Para que sea perfectamente redondo */
+    filter: blur(25px); /* Desenfoque medio */
+    opacity: 0.15; /* Sutil por defecto */
+    
+    /* Animación */
+    animation: pulse-aura-dashboard 3s infinite alternate;
+}
+
+/* 3. ANIMACIÓN DEL PULSO */
+@keyframes pulse-aura-dashboard { 
+    /* Inicio del ciclo */
+    0% { transform: scale(0.85); opacity: 0.1; } 
+    /* Pico del pulso */
+    100% { transform: scale(1.3); opacity: 0.4; } 
+}
+
+/* Colores para el Modo Oscuro */
+body.dark {
+    background: linear-gradient(135deg, #0f172a 30%, #1e293b 80%) !important;
+    color: #f8fafc;
+}
+
+.dark .bg-white {
+    background-color: #1e293b !important;
+    color: #f8fafc;
+}
+
+.dark .text-gray-700, .dark .text-gray-800 {
+    color: #e2e8f0 !important;
+}
+
+.dark .border-gray-300 {
+    border-color: #334155 !important;
+}
+
+.dark input, .dark select {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+.dark .row-egreso td, .dark .row-ingreso td {
+    border-bottom: 1px solid #334155;
+}
+
+/* Forzar color de la categoría si es un link o tiene color azul */
+.dark .text-blue-600 {
+    color: #60a5fa !important;
+}
+
+/* SELECTORES COMBINADOS PARA MÁXIMA COMPATIBILIDAD EN MÓVIL */
+html.dark body, 
+body.dark {
+    background: #020617 !important;
+    background-image: linear-gradient(135deg, #020617 30%, #0f172a 80%) !important;
+    color: #f8fafc !important;
+}
+
+/* Tarjetas en modo oscuro forzado */
+.dark div.bg-white,
+.dark .bg-white {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Títulos y textos */
+.dark h1, .dark h2, .dark h3, .dark span:not(.text-success):not(.text-danger) {
+    color: #f8fafc !important;
+}
+
+/* Arreglo de Inputs para móviles (iOS/Android) */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+    background-color: #0f172a !important;
+    color: white !important;
+    border: 1px solid #334155 !important;
+    appearance: none; /* Evita estilos nativos de iOS */
+}
+
+/* Checkbox y radio: conservan su dibujo nativo para que se vea la tilde */
+.dark input[type="checkbox"],
+.dark input[type="radio"] {
+    appearance: auto;
+    accent-color: #3b82f6;
+    color-scheme: dark;
+}
+
+
+/* Corrección de textos generales en Dark Mode */
+.dark .text-gray-700, 
+.dark .text-gray-800, 
+.dark .text-gray-600 {
+    color: #e2e8f0 !important;
+}
+
+.dark .text-gray-500 {
+    color: #94a3b8 !important;
+}
+
+/* Mejora de la tabla de movimientos */
+.dark #lista-movimientos td {
+    color: #f1f5f9 !important; /* Blanco suave para todo el texto de la tabla */
+}
+
+/* Ajuste para que los detalles entre paréntesis ( ) no se pierdan */
+.dark span.text-gray-500 {
+    color: #94a3b8 !important;
+}
+
+/* Asegurar que el título del Dashboard y meses se vean bien */
+.dark #mes-actual, .dark h2 {
+    color: #f8fafc !important;
+}
+
+/* Bordes de las tarjetas para dar profundidad en oscuro */
+.dark .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark .text-success {
+    color: #4ade80 !important; /* Verde esmeralda más suave */
+}
+
+.dark .text-danger {
+    color: #f87171 !important; /* Rojo pastel más suave */
+}
+
+/* Botones de fecha rápida en Dark Mode */
+.dark #btn-hoy, 
+.dark #btn-ayer {
+    background-color: #334155 !important; /* Slate 700 */
+    color: #f1f5f9 !important;
+    border: 1px solid #475569 !important;
+}
+
+.dark #btn-hoy:hover, 
+.dark #btn-ayer:hover {
+    background-color: #475569 !important; /* Un poco más claro al pasar el mouse */
+}
+
+/* Estados de Pago en Dark Mode */
+
+/* PENDIENTE (Rojo) */
+.dark .bg-danger\/10 {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important; /* Rojo pastel */
+}
+
+/* PAGO COMPLETO (Verde) */
+.dark .bg-success\/10 {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important; /* Verde pastel */
+}
+
+/* INACTIVO O NO PRESUPUESTADO (Gris) */
+.dark .bg-gray-100 {
+    background-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+/* Ajuste general para los contenedores de la lista de fijos */
+.dark #lista-fijos div.border {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(15, 23, 42, 0.5) !important;
+}
+
+.dark #busqueda-movimientos {
+    background-color: #1e293b !important;
+    color: white !important;
+    border-color: #334155 !important;
+}
+
+.dark #busqueda-movimientos::placeholder {
+    color: #64748b !important;
+}
+
+/* Corrección final para etiquetas de estado en Fijos Recurrentes */
+.dark #lista-fijos span.bg-danger\/10,
+.dark #lista-fijos span.text-danger {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.dark #lista-fijos span.bg-success\/10,
+.dark #lista-fijos span.text-success {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #6ee7b7 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dark #lista-fijos .text-amber-600 {
+    color: #634701 !important; /* Ámbar más visible en oscuro */
+}
+
+/* -------------------------------------- */
+/* --- BURBUJAS DEL ONBOARDING --- */
+/* -------------------------------------- */
+
+.bubble-btn {
+    background-color: #ffffff;
+    border: 2px solid #e5e7eb; /* gray-200 */
+    border-radius: 1rem;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #4b5563; /* gray-600 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.bubble-btn:hover {
+    border-color: #93c5fd; /* blue-300 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(29, 78, 216, 0.1);
+}
+
+/* Estado SELECCIONADO */
+.bubble-btn.selected {
+    background-color: #eff6ff; /* blue-50 */
+    border-color: #1D4ED8; /* primary */
+    color: #1e3a8a; /* blue-900 */
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.15);
+}
+
+/* Modo Oscuro para Burbujas */
+.dark .bubble-btn {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.dark .bubble-btn:hover {
+    border-color: #475569;
+    background-color: #334155;
+}
+
+.dark .bubble-btn.selected {
+    background-color: rgba(29, 78, 216, 0.2);
+    border-color: #3b82f6; /* blue-500 */
+    color: #bfdbfe; /* blue-200 */
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Animación de entrada suave */
+.animate-fade-in {
+    animation: fadeInOnboarding 0.5s ease-out forwards;
+}
+
+@keyframes fadeInOnboarding {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================================== */
+/* 🛠️ FIX DE CONTRASTE PARA ELEMENTOS DINÁMICOS EN MODO OSCURO */
+/* ========================================================== */
+
+/* Oscurecer los fondos claros inyectados por JS */
+.dark .bg-gray-50, 
+.dark .bg-blue-50 {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+/* Arreglar el botón de "Borrar" (Fondo rojo suave, texto rosa claro) */
+.dark .bg-red-50 {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Forzar que los textos grises se vuelvan blancos tiza para máxima lectura */
+.dark .text-gray-700, 
+.dark .text-gray-800 {
+    color: #f1f5f9 !important;
+}
+
+/* Arreglar el color rojo de los iconos y botones de peligro */
+.dark .text-danger,
+.dark .text-red-700 {
+    color: #fca5a5 !important;
+}
+
+/* ========================================================== */
+/* 🛠️ FIX DE BOTONES (CERRAR / CANCELAR) Y HOVERS EN OSCURO   */
+/* ========================================================== */
+
+/* 1. Botón "Cerrar" fondo y letra base */
+.dark button.bg-gray-200,
+.dark #cerrar-modal-admin-categorias-btn {
+    background-color: #334155 !important; /* Azul/Gris oscuro elegante */
+    color: #f8fafc !important; /* Blanco tiza */
+    border: 1px solid #475569 !important;
+}
+
+/* 2. El efecto Hover (cuando pasás el mouse) para que no se ponga gris claro */
+.dark button.bg-gray-200:hover,
+.dark #cerrar-modal-admin-categorias-btn:hover {
+    background-color: #475569 !important; /* Aclara a un tono Slate, no blanco */
+    color: #ffffff !important; /* Letra hiper blanca */
+}
+
+/* 3. Las "X" de cerrar arriba a la derecha */
+.dark .hover\:text-gray-600:hover,
+.dark .hover\:text-gray-800:hover {
+    color: #ffffff !important; 
+}
+
+/* ========================================================== */
+/* 🎨 DISEÑO CENTRADO PARA PERFIL HIJO (SIN AGUJEROS)         */
+/* ========================================================== */
+
+/* Cuando el body tiene la clase user-hijo, reestructuramos la grilla */
+body.user-hijo main.grid {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+
+/* Forzamos que las columnas de abajo no se dividan en 2 o 3 */
+body.user-hijo .lg\:col-span-3, 
+body.user-hijo .lg\:col-span-2,
+body.user-hijo .md\:grid-cols-2 {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 800px !important; /* Ancho cómodo para lectura */
+}
+
+/* Eliminamos los márgenes que sobran en las tarjetas que quedan */
+body.user-hijo .bg-white {
+    margin-bottom: 1.5rem !important;
+    width: 100% !important;
+}
+
+/* Centramos textos de títulos en el perfil hijo */
+body.user-hijo h1, 
+body.user-hijo h2 {
+    text-align: center !important;
+}
+
+/* Ocultamos visualmente cualquier contenedor que haya quedado vacío */
+body.user-hijo .hidden, 
+body.user-hijo [style*="display: none"] {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Borrar cualquier rastro de las secciones prohibidas */
+body.user-hijo .lg\:col-span-3:has(h2:contains("Análisis Porcentual")),
+body.user-hijo .lg\:col-span-3:has(h2:contains("Distribución")),
+body.user-hijo #panel-estrategia {
+    display: none !important;
+}
+
+/* ========================================================== */
+/* 🛠️ NUEVO: ANIMACIONES PARA ANALYTICS Y FIXES FINALES       */
+/* ========================================================== */
+
+/* Animación de entrada para las tarjetas de Insights */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#contenedor-insights > div {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Fix para que los gráficos de Chart.js nunca desborden el celular */
+canvas {
+    max-width: 100% !important;
+}
+
+/* 🚀 FIX: Forzar a SweetAlert2 a estar por encima de todos los modales de Tailwind */
+.swal2-container {
+    z-index: 99999 !important;
+}
+
+/* 🌙 Modo Oscuro para los modales de SweetAlert2 */
+.dark .swal2-popup {
+    background-color: #1e293b !important; /* Tailwind slate-800 */
+    color: #f8fafc !important; /* Tailwind slate-50 */
+}
+
+.dark .swal2-title {
+    color: #f8fafc !important;
+}
+
+/* Montos del Resumen del Mes: en pantallas anchas no se truncan, el tamaño se ajusta al ancho */
+@media (min-width: 640px) {
+    #total-ingresos,
+    #total-egresos,
+    #balance-final {
+        overflow: visible;
+        text-overflow: clip;
+        font-size: clamp(0.95rem, 1.7vw, 1.5rem);
+    }
+}

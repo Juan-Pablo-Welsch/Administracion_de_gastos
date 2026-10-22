@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Administración de Gastos</title> 
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/images/icono-192.png">
+    <link rel="stylesheet" href="style.css">
+    <meta name="apple-mobile-web-app-status-bar" content="#1D4ED8">
+        <style>
+        html, body {
+            background-color: #020617 !important; /* Fondo negro Disney+ inmediato */
+            margin: 0; padding: 0; height: 100%;
+        }
+        #splash {
+            position: fixed; inset: 0; background: #020617 !important;
+            z-index: 9999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        #splash-logo-img {
+            width: 200px !important; height: 200px !important; 
+            border-radius: 100% !important; /* Forza logo redondo */
+            object-fit: cover;
+        }
+        .content-hidden { display: none !important; }
+        
+        /* Estilos para la pantalla de Login */
+        #login-screen {
+            position: fixed; inset: 0; z-index: 9998;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); /* Degradado oscuro elegante */
+        }
+    
+    /* ONBOARDING - TOUR GUIADO */
+#onboarding-overlay {
+    background: rgba(0,0,0,0.75);
+}
+@keyframes onboardingPulse {
+    0%, 100% { box-shadow: 0 0 0 4px #1D4ED8, 0 0 0 9999px rgba(0,0,0,0.75), 0 0 25px 8px rgba(29,78,216,0.9); }
+    50% { box-shadow: 0 0 0 6px #3b82f6, 0 0 0 9999px rgba(0,0,0,0.75), 0 0 40px 14px rgba(29,78,216,1); }
+}
+.onboarding-highlight {
+    position: fixed !important;
+    z-index: 501;
+    border-radius: 20px;
+    background: rgba(15,23,42,0.4);
+    animation: onboardingPulse 1.4s ease-in-out infinite;
+}
+    
+    </style>
+
+    <link rel="stylesheet" href="style.css?v=1.2"> 
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1D4ED8', // Azul Oscuro para botones principales
+                        success: '#059669', // Verde para ingresos y buen balance
+                        danger: '#EF4444',  // Rojo para egresos y balances negativos
+                    }
+                }
+            }
+        }
+    </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script type="text/javascript">
+(function(){
+      emailjs.init("uX1BwWufci_nMYjrA"); // Tu Public Key
+})();
+</script>
+<link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icono-192.png">
+    <link rel="apple-touch-icon" href="images/icono-192.png">
+</head>
+<body class="min-h-screen" style="background-color: #020617;">
+    
+    <div id="splash">
+        <div class="disney-bg"></div>
+        <div class="logo-container">
+            <img src="/images/icono-192.png" id="splash-logo-img"> 
+            <div class="logo-shimmer"></div>
+        </div>
+        <div class="disney-spinner"></div>
+    </div>
+
+    <div id="login-screen" class="content-hidden text-center p-6">
+        <img src="/images/icono-192.png" alt="Logo" class="w-32 h-32 rounded-full mx-auto mb-8 shadow-2xl border-4 border-white/10">
+        <h1 class="text-3xl font-extrabold text-white mb-2">Bienvenido</h1>
+        <p class="text-gray-400 mb-8 text-sm max-w-xs mx-auto">Inicia sesión de forma segura para gestionar el presupuesto familiar.</p>
+        
+        <button id="btn-login-google" class="bg-white text-gray-800 font-bold py-3 px-6 rounded-full shadow-lg hover:bg-gray-100 hover:shadow-xl transition-all flex items-center justify-center mx-auto space-x-3 w-full max-w-sm">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span>Continuar con Google</span>
+        </button>
+    </div>
+
+    <div id="onboarding-screen" class="fixed inset-0 z-[9995] bg-slate-50 dark:bg-[#020617] content-hidden flex-col">
+        
+        <div class="w-full p-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm">
+            <div class="flex items-center space-x-3">
+                <img src="/images/icono-144.png" alt="Logo" class="w-10 h-10 rounded-full">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Configuración Inicial</h2>
+            </div>
+            <span class="text-sm font-semibold text-primary" id="onboarding-step-text">Paso 1 de 2</span>
+        </div>
+
+        <div class="flex-grow overflow-y-auto p-6 sm:p-10 flex justify-center">
+            
+            <div id="onboarding-step-1" class="max-w-2xl w-full space-y-8 animate-fade-in">
+                <div class="text-center space-y-3">
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
+                        ¡Hola, <span id="onboarding-nombre-usuario" class="text-primary">Juan Pablo</span>! 👋
+                    </h1>
+                    <p class="text-gray-500 dark:text-gray-400 text-lg">
+                        Personalicemos tu experiencia. Seleccioná qué elementos forman parte de tu día a día para armarte un plan a medida.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-8" id="bubble-container">
+                    <button class="bubble-btn" data-tag="auto">
+                        <span class="text-3xl mb-2 block">🚗</span>
+                        <span class="font-semibold">Vehículo</span>
+                        <span class="text-xs opacity-75 block mt-1">Nafta, Seguro, Patente</span>
+                    </button>
+                    
+                    <button class="bubble-btn" data-tag="casa">
+                        <span class="text-3xl mb-2 block">🏠</span>
+                        <span class="font-semibold">Hogar</span>
+                        <span class="text-xs opacity-75 block mt-1">Alquiler, Expensas</span>
+                    </button>
+
+                    <button class="bubble-btn" data-tag="mascotas">
+                        <span class="text-3xl mb-2 block">🐶</span>
+                        <span class="font-semibold">Mascotas</span>
+                        <span class="text-xs opacity-75 block mt-1">Alimento, Vet</span>
+                    </button>
+
+                    <button class="bubble-btn" data-tag="hijos">
+                        <span class="text-3xl mb-2 block">👶</span>
+                        <span class="font-semibold">Hijos</span>
+                        <span class="text-xs opacity-75 block mt-1">Colegio, Ropa</span>
+                    </button>
+
+                    <button class="bubble-btn" data-tag="suscripciones">
+                        <span class="text-3xl mb-2 block">🎬</span>
+                        <span class="font-semibold">Suscripciones</span>
+                        <span class="text-xs opacity-75 block mt-1">Netflix, Spotify</span>
+                    </button>
+
+                    <button class="bubble-btn" data-tag="salidas">
+                        <span class="text-3xl mb-2 block">🍔</span>
+                        <span class="font-semibold">Salidas</span>
+                        <span class="text-xs opacity-75 block mt-1">Delivery, Ocio</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="onboarding-step-2" class="max-w-2xl w-full space-y-8 hidden animate-fade-in">
+                <div class="text-center space-y-3">
+                    <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">Revisión Final ✍️</h1>
+                    <p class="text-gray-500 dark:text-gray-400">
+                        Basado en tus selecciones, así quedó tu estructura. Podés agregar lo que falte o borrar lo que no uses.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-bold text-lg text-blue-600 dark:text-blue-400 mb-4 border-b pb-2">Gastos Fijos</h3>
+                        <div id="onboarding-lista-fijos" class="space-y-2 mb-4">
+                            </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-bold text-lg text-amber-500 mb-4 border-b pb-2">Gastos Diarios (Variables)</h3>
+                        <div id="onboarding-lista-variables" class="space-y-2 mb-4">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="w-full p-6 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
+            <button id="btn-onboarding-back" class="text-gray-500 hover:text-gray-800 dark:hover:text-white font-semibold px-4 py-2 invisible">
+                Volver
+            </button>
+            <button id="btn-onboarding-next" class="bg-primary text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all transform hover:scale-105">
+                Siguiente Paso ➡️
+            </button>
+        </div>
+    </div>
+
+    <div id="app-content" class="container mx-auto p-4 sm:p-6 lg:p-8 content-hidden">
+        
+    <header class="text-center mb-8 flex flex-col items-center relative pt-8 sm:pt-0">
+    
+    <div class="absolute top-0 right-0 z-50 flex items-center gap-2">
+        
+        <a href="analisis.html" id="btn-analisis" class="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50 dark:hover:bg-blue-900/50 text-sm font-semibold rounded-lg transition shadow-sm border border-blue-100" title="Análisis Avanzado">
+            📊 <span class="hidden sm:inline">Análisis</span>
+        </a>
+
+                <button id="btn-mi-familia" class="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50 dark:hover:bg-blue-900/50 text-sm font-semibold rounded-lg transition shadow-sm border border-blue-100" title="Mi Equipo">
+            👨‍👩‍👧‍👦 <span class="hidden sm:inline">Equipo</span>
+        </button>
+
+                <button id="btn-config-menu" onclick="toggleConfigMenu()" class="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors" title="Configuración">
+            ⚙️
+        </button>
+
+        <button id="btn-logout" class="bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 p-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-danger hover:text-white dark:hover:bg-danger transition-colors" title="Cerrar Sesión">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="logo-dashboard-wrapper mt-2 sm:mt-0">
+        <div class="faro-aura-dashboard"></div>
+        <img src="/images/icono-144.png" alt="Logo de App" class="w-full h-full rounded-full shadow-xl object-cover relative z-10"/>
+    </div>
+    
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-white mt-3 tracking-tight">Administración de Gastos</h1>
+    
+    
+    <div class="mt-2 flex justify-center z-20 relative">
+        <button id="btn-editar-nombre-casa" class="flex items-center gap-2 px-4 py-1.5 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors shadow-sm">
+            <span>🏠</span>
+            <span id="display-nombre-casa">Definir nombre de tu casa...</span>
+            <span class="text-[10px] opacity-50 ml-1">✏️</span>
+        </button>
+    </div>
+
+    <p id="user-info-display" class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-2"></p>
+    
+    <div id="container-admin-maestro" class="hidden w-full max-w-md mx-auto px-4 mt-6">
+        <button id="btn-maestro" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-black font-black py-3 rounded-xl shadow-lg hover:scale-105 transition-all uppercase text-xs tracking-widest">
+            👑 Panel Maestro ZorWel
+        </button>
+
+    </div>
+
+    
+
+</header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-1 space-y-6">
+
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">📅 Seleccionar Período</h2>
+                    <div class="flex space-x-3">
+                        <select id="mes-filtro" class="flex-grow p-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                            </select>
+                        <button id="aplicar-filtro" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150">Ver</button>
+                    </div>
+                    
+                    <div id="admin-controls-container">
+                        <button id="btn-config-fijos" class="mt-4 w-full text-sm text-gray-600 border border-gray-300 p-2 rounded-lg hover:bg-gray-100 transition duration-150">
+                            ⚙️ Configurar Presupuesto Mensual
+                        </button>
+                        <button id="btn-administrar-fijos" class="mt-2 w-full text-sm text-gray-600 border border-gray-300 p-2 rounded-lg hover:bg-gray-100 transition duration-150">
+                            ➕ Administrar Mis Categorías
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2 flex justify-between items-center">
+                        🧾 Fijos Recurrentes
+                        <button onclick="toggleSensitiveData('fijos')" class="p-1 text-xl text-gray-400 hover:text-primary transition-all ml-2" title="Ocultar Montos">
+                            <span id="icon-fijos">🙈</span>
+                        </button>
+                    </h2>
+                    <div class="space-y-2 mb-4 text-sm">
+                        <p class="flex justify-between font-medium">
+                            <span>Presupuesto Total:</span>
+                            <span id="fijos-presupuesto" class="text-primary font-bold sensitive-data fijos-data">$0</span>
+                        </p>
+                        <p class="flex justify-between font-medium">
+                            <span>Pagado hasta ahora:</span>
+                            <span id="fijos-pagados" class="text-success font-bold sensitive-data fijos-data">$0</span>
+                        </p>
+                        <p class="flex justify-between text-lg font-bold border-t pt-2">
+                            <span>Pendiente:</span>
+                            <span id="fijos-pendiente" class="text-danger sensitive-data fijos-data">$0</span>
+                        </p>
+                    </div>
+                    <div id="lista-fijos" class="space-y-3 max-h-96 overflow-y-auto">
+                        </div>
+                </div>
+
+            </div>
+
+<div class="lg:col-span-2 space-y-6">
+    
+    <div id="dashboard" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b border-gray-100 dark:border-gray-700 pb-2 flex justify-between items-center gap-2">
+            <span class="text-base sm:text-xl">
+                📊 Resumen del Mes (<span id="mes-actual">Cargando...</span>)
+            </span>
+            <button onclick="toggleSensitiveData('resumen')" 
+                class="text-xl px-2.5 py-1.5 rounded-lg bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 transition-all flex-shrink-0" 
+                title="Mostrar Saldo">
+                <span id="icon-resumen">🙈</span>
+            </button>
+        </h2>
+        
+        <div class="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+            <div class="p-2 sm:p-3 rounded-lg bg-success/10 border border-success/30 flex flex-col justify-between min-w-0 overflow-hidden">
+                <h3 class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase truncate">Ingresos</h3>
+                <div class="sensitive-data resumen-data mt-1">
+                    <strong id="total-ingresos" class="text-base sm:text-2xl font-bold text-success block truncate leading-tight">$0</strong>
+                </div>
+            </div>
+
+            <div class="p-2 sm:p-3 rounded-lg bg-danger/10 border border-danger/30 flex flex-col justify-between min-w-0 overflow-hidden">
+                <h3 class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase truncate">Egresos</h3>
+                <div class="sensitive-data resumen-data mt-1">
+                    <strong id="total-egresos" class="text-base sm:text-2xl font-bold text-danger block truncate leading-tight">$0</strong>
+                </div>
+            </div>
+
+                <div class="p-2 sm:p-3 rounded-lg bg-primary/10 border border-primary/30 flex flex-col justify-between min-w-0 overflow-hidden">
+    <h3 class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase truncate">Balance</h3>
+    <div class="sensitive-data resumen-data mt-1">
+        <strong id="balance-final" class="text-base sm:text-2xl font-bold block truncate leading-tight">$0</strong>
+    </div>
+    
+    <div class="mt-2 pt-2 border-t border-primary/20 flex justify-between items-center">
+        <div class="flex items-center gap-1 cursor-pointer group" onclick="event.stopPropagation(); verInfoPronostico()">
+            <span class="text-[9px] font-black text-primary uppercase tracking-widest hidden sm:inline">Pronóstico</span>
+            <span class="text-[9px] font-black text-primary uppercase tracking-widest sm:hidden">Pron.</span>
+            <span class="text-[9px] text-blue-500/50 group-hover:text-primary transition-colors">ⓘ</span>
+        </div>
+        
+        <div class="flex items-center gap-1 cursor-pointer sensitive-data resumen-data transition-all" onclick="mostrarPaywallPro()">
+            <span id="pronostico-valor" class="text-xs font-bold text-transparent select-none" style="text-shadow: 0 0 5px rgba(29,78,216,0.6);">~$0</span>
+            <span class="text-[8px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1 py-0.5 rounded font-bold">🔒 PRO</span>
+        </div>
+    </div>
+    </div>
+</div>
+
+                <p class="mt-4 text-xs sm:text-sm text-center flex justify-center items-center gap-1 cursor-pointer group w-fit mx-auto" onclick="verInfoIPC()">
+            Inflación Personal (vs. Mes Anterior): 
+            <span id="ipc-valor" class="font-semibold text-gray-600 dark:text-gray-300">--</span>
+            <span class="text-[14px] text-blue-500/60 group-hover:text-primary transition-colors" title="¿Qué significa este número?">ⓘ</span>
+        </p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🎯</span>
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">Límites Variables</h3>
+            </div>
+            <button onclick="abrirConfiguracionLimites()" class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+    + Configurar
+</button>
+        </div>
+
+        <div class="space-y-4" id="contenedor-limites">
+            <div>
+                <div class="flex justify-between items-end mb-1">
+                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Kiosco</span>
+                    <span class="text-[10px] text-gray-500 font-medium">$12.500 / $15.000</span>
+                </div>
+                <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2">
+                    <div class="bg-amber-500 h-2 rounded-full" style="width: 83%"></div>
+                </div>
+            </div>
+
+            <div class="relative mt-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-4 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors" onclick="mostrarPaywallPro()">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white dark:bg-slate-800 px-2">
+                    <span class="text-xs font-black text-amber-500 uppercase tracking-widest">🔒 Premium</span>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-2">
+                    Añadí hasta 3 límites (Ej: Ocio, Delivery) y controlá tus fugas de dinero.
+                </p>
+                <span class="inline-block mt-2 text-xs font-bold text-primary">Desbloquear ahora &rarr;</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="panel-hijo-presupuesto" class="lg:col-span-3 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg hidden border-2 border-primary/20">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white">💰 Mi Billetera</h2>
+            <span id="hijo-monto-disponible" class="text-2xl font-black text-primary">$0</span>
+        </div>
+        <p id="hijo-texto-presupuesto" class="text-sm text-gray-500 mb-3 font-medium italic">Cargando...</p>
+        <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-4 overflow-hidden border border-gray-300 dark:border-gray-600">
+            <div id="hijo-barra-progreso" class="bg-success h-full transition-all duration-1000" style="width: 0%"></div>
+        </div>
+    </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">✍️ Cargar Movimiento (Diario)</h2>
+                    <form id="form-movimiento" class="space-y-4">
+                        
+                        <div class="flex space-x-2">
+                            <input type="date" id="fecha" required 
+                                    class="w-1/2 p-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                            <button type="button" id="btn-hoy" class="bg-gray-300 text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-400 transition duration-150 text-sm">Hoy</button>
+                            <button type="button" id="btn-ayer" class="bg-gray-300 text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-400 transition duration-150 text-sm">Ayer</button>
+                        </div>
+                        
+                        <select id="tipo" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                            <option value="egreso">Egreso</option>
+                            <option value="ingreso">Ingreso</option>
+                        </select>
+                        
+                        <select id="categoria" required 
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                            </select>
+                        
+                        <input type="text" id="detalle" placeholder="Detalle (Opcional)" 
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                        
+                                                <input type="number" step="0.01" id="monto" placeholder="Monto" required 
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+
+                        <button type="button" id="btn-voz" class="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg font-semibold border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-slate-600 transition duration-150">
+                            <span id="icono-voz">🎤</span> <span id="texto-voz">Cargar por voz</span>
+                        </button>
+                        
+                        <button type="submit" class="w-full bg-primary text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-150">
+                            GUARDAR
+                        </button>
+                    </form>
+                    <div id="mini-historial-container" class="mt-6 border-t border-gray-100 dark:border-gray-700 pt-4">
+    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Últimos movimientos</h4>
+    <div id="lista-mini-historial" class="space-y-2">
+        </div>
+</div>
+                </div>
+
+            </div>
+            
+            <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex flex-col min-h-[350px]">
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-4 border-b pb-2 w-full text-center shrink-0">
+            📉 Distribución de Gastos
+        </h2>
+        <div class="relative flex-grow flex items-center justify-center">
+            <canvas id="graficoGastos"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex flex-col min-h-[350px]">
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-4 border-b pb-2 w-full text-center shrink-0">
+            📈 Distribución de Ingresos
+        </h2>
+        <div class="relative flex-grow flex items-center justify-center">
+            <canvas id="graficoIngresos"></canvas>
+        </div>
+    </div>
+
+</div>
+
+            <div id="panel-estrategia" class="lg:col-span-3 bg-gradient-to-r from-slate-50 to-blue-50 border border-blue-100 p-4 sm:p-6 rounded-xl shadow-lg mt-4 hidden">
+                <h2 class="text-2xl font-bold text-primary mb-4 border-b border-blue-200 pb-2 flex items-center">
+                    <span class="mr-2">🧠</span> Insights & Tendencias
+                </h2>
+                <div id="contenido-estrategia" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <p class="text-gray-500 col-span-2 text-center py-8">Cargando inteligencia de datos...</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">📋 Análisis Porcentual Detallado</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div>
+            <div class="flex items-center gap-2 mb-3 cursor-pointer group w-fit" onclick="verInfoRegla503020()">
+                <h3 class="font-bold text-lg text-primary">Impacto en el Ingreso Total</h3>
+                <span class="text-[12px] text-blue-500/60 group-hover:text-primary transition-colors" title="Ver explicación de la regla">ⓘ</span>
+            </div>
+
+            <div class="space-y-3">
+                <p class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-gray-700">Gastos Fijos / Ingreso Total:</span>
+                    <span id="pct-fijos-vs-ingreso" class="font-bold text-lg text-danger">--</span>
+                </p>
+                <p class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-gray-700">Gastos Variables / Ingreso Total:</span>
+                    <span id="pct-variables-vs-ingreso" class="font-bold text-lg text-danger">--</span>
+                </p>
+                <p class="flex justify-between items-center text-sm border-t pt-3">
+                    <span class="font-medium text-gray-700">Ahorro/Remanente:</span>
+                    <span id="pct-balance-vs-ingreso" class="font-bold text-lg text-success">--</span>
+                </p>
+            </div>
+        </div>
+        
+        <div id="top-gastos-variables" class="space-y-2">
+            <h4 class="text-md font-semibold text-gray-700">Top Variables:</h4>
+            </div>
+
+        <div id="top-gastos-fijos" class="space-y-2">
+            <h4 class="text-md font-semibold text-gray-700">Top Fijos:</h4>
+            </div>
+
+    </div>
+</div>
+
+            <div class="lg:col-span-3 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+                    <span>Historial de Movimientos</span>
+                    <input type="text" id="busqueda-movimientos" placeholder="Buscar categoría o detalle..." 
+                        class="w-full sm:w-1/3 p-2 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary" />
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-fixed divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 w-[20%] text-left">Fecha</th>
+                                <th class="px-4 py-3 w-[40%] text-left">Categoría y Detalle</th>
+                                <th class="px-4 py-3 w-[25%] text-left">Monto</th>
+                                <th class="px-4 py-3 w-[15%] text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-movimientos" class="bg-white divide-y divide-gray-200 text-sm">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+
+        <div id="modal-fijos" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h3 class="text-xl font-semibold text-gray-900">⚙️ Configurar Presupuesto</h3>
+                    <button id="cerrar-modal-fijos" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Establece límites para tus gastos variables o montos estimados para tus fijos.</p>
+                <div id="fijos-maestros-container" class="space-y-3 max-h-96 overflow-y-auto p-1"></div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button id="guardar-config-fijos" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold transition duration-150">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-admin-categorias" class="fixed inset-0 z-[9000] flex items-center justify-center bg-black bg-opacity-60 content-hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900/50">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">⚙️ Mis Categorías</h3>
+                <button id="cerrar-modal-admin-categorias" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow">
+                <form id="form-nueva-categoria" class="mb-6 bg-blue-50 dark:bg-slate-700/50 p-4 rounded-xl border border-blue-100 dark:border-slate-600">
+                    <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3">Añadir Nueva</h4>
+                    <div class="space-y-3">
+                        <input type="text" id="nombre-nueva-categoria" placeholder="Ej: Clases de Guitarra" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary focus:border-primary dark:bg-slate-800 dark:text-white text-sm" required />
+                        <div class="flex space-x-2">
+                            <select id="tipo-nueva-categoria" class="w-1/2 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary focus:border-primary dark:bg-slate-800 dark:text-white text-sm">
+                                <option value="variables">Diario (Variable)</option>
+                                <option value="fijos">Mensual (Fijo)</option>
+                            </select>
+                            <button type="submit" class="w-1/2 bg-primary text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm shadow-md">
+                                + Agregar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 border-b dark:border-gray-700 pb-1 flex justify-between">Gastos Variables <span class="text-xs font-normal text-gray-500">Día a día</span></h4>
+                        <div id="lista-admin-variables" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 border-b dark:border-gray-700 pb-1 flex justify-between">Gastos Fijos <span class="text-xs font-normal text-gray-500">Recurrentes</span></h4>
+                        <div id="lista-admin-fijos" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50 flex justify-end">
+                <button id="cerrar-modal-admin-categorias-btn" class="bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition duration-150">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    </div>
+        <div id="modalAyuda" class="fixed inset-0 z-[9500] hidden flex items-center justify-center bg-black bg-opacity-60 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900/50">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">❓ ¿Cómo hago para...?</h3>
+                <button onclick="toggleAyuda()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow">
+                <ul class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                    <li>🧾 <strong>Configurar mi presupuesto mensual:</strong> Botón "⚙️ Configurar Presupuesto Mensual"</li>
+                    <li>➕ <strong>Agregar o borrar una categoría propia:</strong> Botón "➕ Administrar Mis Categorías"</li>
+                    <li>✍️ <strong>Cargar un gasto o ingreso del día:</strong> Formulario "Cargar Movimiento (Diario)"</li>
+                    <li>📊 <strong>Ver el detalle avanzado y alertas de fuga:</strong> Ícono "📊 Análisis" arriba a la derecha</li>
+                    <li>👨‍👩‍👧‍👦 <strong>Invitar a mi pareja o hijos a la casa:</strong> Botón "Equipo"</li>
+                    <li>💰 <strong>Configurar la mesada de mi hijo:</strong> Dentro de "Equipo", botón "💰 Mesada" junto a cada hijo</li>
+                </ul>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-5">¿Algo no está en esta lista? Escribinos.</p>
+            </div>
+
+                       <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50 flex flex-col gap-2">
+                <button onclick="toggleAyuda(); iniciarOnboarding();" class="bg-primary text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-150">Ver guía paso a paso</button>
+                <button onclick="toggleAyuda()" class="bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition duration-150">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+        <div id="modal-config" class="fixed inset-0 z-[9500] hidden flex items-center justify-center bg-black bg-opacity-60 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900/50">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">⚙️ Configuración</h3>
+                <button onclick="toggleConfigMenu()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+
+            <div class="p-6 space-y-3">
+                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700/50 rounded-xl border border-gray-100 dark:border-slate-600">
+                    <span class="text-sm font-bold text-gray-700 dark:text-gray-200">🌗 Tema Oscuro / Claro</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="dark-mode-toggle" class="sr-only peer">
+                        <div class="w-8 h-4 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-gray-500 peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+
+                <button onclick="toggleConfigMenu(); toggleAyuda();" class="w-full flex items-center justify-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-xl border border-blue-100 dark:border-blue-800/50 text-sm font-bold transition-all">
+                    ❓ Ayuda y guía de inicio
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="onboarding-overlay" class="hidden fixed inset-0 z-[500]"></div>
+    <div id="onboarding-tooltip" class="hidden fixed z-[502] left-1/2 -translate-x-1/2 bottom-6 w-[90%] max-w-sm bg-white dark:bg-[#161b2c] border border-gray-200 dark:border-white/10 rounded-2xl p-5 shadow-2xl">
+        <div class="flex justify-between items-center mb-2">
+            <span id="onb-step-count" class="text-[9px] font-black text-primary uppercase tracking-widest">Paso 1 de 5</span>
+            <button onclick="cerrarOnboarding()" class="text-gray-400 hover:text-gray-700 dark:hover:text-white text-lg leading-none">&times;</button>
+        </div>
+        <h4 id="onb-titulo" class="text-sm font-black text-gray-800 dark:text-white uppercase mb-1"></h4>
+        <p id="onb-texto" class="text-xs text-gray-600 dark:text-slate-300 leading-relaxed mb-4"></p>
+        <div class="flex justify-between items-center gap-2">
+            <button onclick="cerrarOnboarding()" class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase">Omitir</button>
+            <button onclick="siguientePasoOnboarding()" id="onb-btn-siguiente" class="px-4 py-2 bg-primary text-white text-[10px] font-black uppercase rounded-xl">Siguiente</button>
+        </div>
+    </div>
+
+    <div id="modal-familia" class="fixed inset-0 z-[9000] flex items-center justify-center bg-black bg-opacity-60 content-hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900/50">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">👨‍👩‍👧‍👦 Gestión Familiar</h3>
+                <button id="cerrar-modal-familia" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow">
+                <div class="mb-6 bg-blue-50 dark:bg-slate-700/50 p-5 rounded-xl border border-blue-100 dark:border-slate-600">
+                    <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">Invitar a un miembro</h4>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-4">Ingresá el correo de Google de tu pareja o hijos para sumarlos a tu casa.</p>
+                    <form id="form-invitar-miembro" class="space-y-3">
+                        <input type="email" id="email-invitacion" placeholder="ejemplo@gmail.com" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary focus:border-primary dark:bg-slate-800 dark:text-white text-sm" required />
+                        <div class="flex space-x-2">
+                            <select id="rol-invitacion" class="w-1/2 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary focus:border-primary dark:bg-slate-800 dark:text-white text-sm">
+                                <option value="admin">Admin (Ver todo)</option>
+                                <option value="dependiente">Hijo/Dependiente (Ver solo lo suyo)</option>
+                            </select>
+                            <button type="submit" class="w-1/2 bg-primary text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm shadow-md">
+                                ✉️ Enviar Invitación
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 border-b dark:border-gray-700 pb-1">Miembros de la Casa</h4>
+                    <div id="lista-miembros-familia" class="space-y-3">
+                        <div class="flex justify-between items-center p-3 rounded-lg border bg-white dark:bg-slate-800 dark:border-slate-700 shadow-sm">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">JP</div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800 dark:text-white">Vos</p>
+                                    <p class="text-xs text-gray-500">Admin Propietario</p>
+                                </div>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded">ACTIVO</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50 flex justify-end">
+                <button id="cerrar-modal-familia-btn" class="bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition duration-150">Cerrar Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Le pasamos la ruta directa de la raíz
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registro => {
+                        console.log('✅ SW Registrado directo en HTML. Scope:', registro.scope);
+                    })
+                    .catch(error => {
+                        console.error('❌ Error al registrar SW:', error);
+                    });
+            });
+        }
+    </script>
+
+    <script type="module" src="app.js?v=3.5"></script>
+
+</body>
+</html>
