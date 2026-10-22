@@ -1,4 +1,5 @@
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const { GoogleGenAI, Type } = require("@google/genai");
 const crypto = require("crypto");
@@ -449,17 +450,18 @@ async function aplicarEstadoSuscripcion(preapproval) {
     mp_actualizado: admin.firestore.FieldValue.serverTimestamp()
   };
 
-  if (preapproval.status === "authorized") {
+    if (preapproval.status === "authorized") {
     const proximo = preapproval.next_payment_date ? new Date(preapproval.next_payment_date) : null;
     const base = proximo && !isNaN(proximo.getTime()) ? proximo : new Date(Date.now() + DIAS_SIN_FECHA * DIA_MS);
-    datos.es_pro = true;
-    datos.pro_hasta = admin.firestore.Timestamp.fromDate(new Date(base.getTime() + GRACIA_DIAS * DIA_MS));
+    const hasta = new Date(base.getTime() + GRACIA_DIAS * DIA_MS);
+    datos.pro_hasta = admin.firestore.Timestamp.fromDate(hasta);
+    datos.es_pro = hasta.getTime() > Date.now();
   }
   // paused / cancelled / pending: no se toca es_pro ni pro_hasta.
   // El PRO vence solo cuando pasa pro_hasta (lo apaga el job diario).
 
   await ref.set(datos, { merge: true });
-  return { ok: true, familiaId, estado: preapproval.status, es_pro_activado: preapproval.status === "authorized" };
+    return { ok: true, familiaId, estado: preapproval.status, es_pro: datos.es_pro === true };
 }
 
 exports.webhookMercadoPago = onRequest(
@@ -495,5 +497,65 @@ exports.webhookMercadoPago = onRequest(
       console.error("Error procesando webhook MP:", error);
       return res.status(500).send("error"); // MP reintenta
     }
+  }
+);
+
+// ====================================================================
+// 🕐 JOB DIARIO: sincroniza con Mercado Pago y apaga el PRO vencido
+// Solo toca casas que tienen mp_preapproval_id. Las casas PRO dadas a mano
+// (VIP, Panel Maestro) nunca pasan por acá.
+// ====================================================================
+exports.revisarSuscripciones = onSchedule(
+  {
+    schedule: "0 6 * * *",
+    timeZone: "America/Argentina/Buenos_Aires",
+    region: "us-central1",
+    timeoutSeconds: 300,
+    secrets: [MP_ACCESS_TOKEN]
+  },
+  async () => {
+    const admin = require("firebase-admin");
+    if (!admin.apps.length) admin.initializeApp();
+    const db = admin.firestore();
+    const token = MP_ACCESS_TOKEN.value();
+
+    const snap = await db.collection("familias").where("mp_preapproval_id", ">", "").get();
+
+    let sincronizadas = 0;
+    let apagadas = 0;
+    let errores = 0;
+
+    for (const docSnap of snap.docs) {
+      const idSuscripcion = docSnap.data().mp_preapproval_id;
+
+      // 1) Sincronizar con MP (renovaciones, pausas, cancelaciones)
+      try {
+        const preapproval = await obtenerSuscripcionMP(idSuscripcion, token);
+        if (preapproval) {
+          await aplicarEstadoSuscripcion(preapproval);
+          sincronizadas++;
+        }
+      } catch (error) {
+        // Si no se pudo consultar a MP, no se apaga nada: ante la duda se mantiene
+        errores++;
+        console.error("No se pudo sincronizar la casa", docSnap.id, error);
+        continue;
+      }
+
+      // 2) Apagar si venció (pro_hasta ya incluye la gracia)
+      const actual = (await docSnap.ref.get()).data();
+      const hasta = actual.pro_hasta && actual.pro_hasta.toDate ? actual.pro_hasta.toDate() : null;
+
+      if (actual.es_pro === true && hasta && hasta.getTime() < Date.now()) {
+        await docSnap.ref.set(
+          { es_pro: false, pro_apagado_el: admin.firestore.FieldValue.serverTimestamp() },
+          { merge: true }
+        );
+        apagadas++;
+        console.log("PRO apagado por vencimiento:", docSnap.id);
+      }
+    }
+
+    console.log(`revisarSuscripciones: ${snap.size} casas con suscripción, ${sincronizadas} sincronizadas, ${apagadas} apagadas, ${errores} con error`);
   }
 );
